@@ -87,11 +87,11 @@ async function run() {
       const user = req.body;
 
       //check if use already exist in db
-      // const filter = { email: email }
-      // const isExist = usersCollection.findOne(filter)
-      // if (isExist) {
-      //   return res.send(isExist)
-      // }
+      const filter = { email: email }
+      const isExist = usersCollection.findOne(filter)
+      if (isExist) {
+        return res.send(isExist)
+      }
 
       const query = { email: user?.email }
       const options = { upsert: true }
