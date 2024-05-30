@@ -82,7 +82,7 @@ async function run() {
       }
     })
 
-    //save a user data in db
+    //save a user data in db and admin role setup
     app.put('/user', async (req, res) => {
       const user = req.body;
       console.log('user info in server', user)
@@ -91,13 +91,16 @@ async function run() {
 
       const isExist = usersCollection.findOne(query)
       if (isExist) {
+
         if (user.status === 'Requested') {
+          //if existing user try to change his role
           const result = await usersCollection.updateOne(query, {
             $set: { status: user?.status },
           })
           res.send(result)
         }
       } else {
+        //if existing user login again
         return res.send(isExist)
       }
 
