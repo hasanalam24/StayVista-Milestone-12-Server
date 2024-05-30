@@ -76,7 +76,7 @@ async function run() {
             sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
           })
           .send({ success: true })
-        console.log('Logout successful')
+        // console.log('Logout successful')
       } catch (err) {
         res.status(500).send(err)
       }
@@ -85,11 +85,12 @@ async function run() {
     //save a user data in db and admin role setup
     app.put('/user', async (req, res) => {
       const user = req.body;
-      console.log('user info in server', user)
+      // console.log('user info in server', user)
       const query = { email: user?.email }
       //check if use already exist in db
 
-      const isExist = usersCollection.findOne(query)
+      const isExist = await usersCollection.findOne(query)
+
       if (isExist) {
 
         if (user.status === 'Requested') {
@@ -98,10 +99,10 @@ async function run() {
             $set: { status: user?.status },
           })
           res.send(result)
+        } else {
+          //if existing user login again
+          return res.send(isExist)
         }
-      } else {
-        //if existing user login again
-        return res.send(isExist)
       }
 
       //save  user for the first time
@@ -135,6 +136,22 @@ async function run() {
       const result = await usersCollection.find().toArray()
       res.send(result)
     })
+
+    //update a user role
+    app.patch('/users/update/:email', async (req, res) => {
+      const email = req.params.email
+      const user = req.body;
+      const query = { email: email }
+      const updatedDoc = {
+        $set: {
+          ...user,
+          timestamp: Date.now()
+        }
+      }
+      const result = await usersCollection.updateOne(query, updatedDoc)
+      res.send(result)
+    })
+
 
     //get all rooms from db
     // app.get('/rooms', async (req, res) => {
