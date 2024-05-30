@@ -85,15 +85,23 @@ async function run() {
     //save a user data in db
     app.put('/user', async (req, res) => {
       const user = req.body;
-
+      console.log('user info in server', user)
+      const query = { email: user?.email }
       //check if use already exist in db
-      const filter = { email: email }
-      const isExist = usersCollection.findOne(filter)
+
+      const isExist = usersCollection.findOne(query)
       if (isExist) {
+        if (user.status === 'Requested') {
+          const result = await usersCollection.updateOne(query, {
+            $set: { status: user?.status },
+          })
+          res.send(result)
+        }
+      } else {
         return res.send(isExist)
       }
 
-      const query = { email: user?.email }
+      //save  user for the first time
       const options = { upsert: true }
       const updatedDoc = {
         $set: {
@@ -102,8 +110,19 @@ async function run() {
         }
       }
       const result = await usersCollection.updateOne(query, updatedDoc, options)
+      res.send(result)
     })
 
+    app.get('/user', async (req, res) => {
+      const result = await usersCollection.find().toArray()
+      res.send(result)
+    })
+
+    //get all users from db
+    app.get('/users', async (req, res) => {
+      const result = await usersCollection.find().toArray()
+      res.send(result)
+    })
 
     //get all rooms from db
     // app.get('/rooms', async (req, res) => {
